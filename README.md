@@ -1,7 +1,7 @@
 # 仓库介绍
 - 本 forked repo 源于《AIOS：LLM Agent Operating System》的官方代码仓库，仅供学习只用，且在其基础上进行二次开发
 - 关于本 AIOS 的技术架构和实现笔记参考：[链接](https://zhuanlan.zhihu.com/p/691420682)
-- 原 Readme 请参考 [README_OFFCIAL.md](https://github.com/agiresearch/AIOS/blob/main/README_OFFCIAL.md)
+- 原 Readme 请参考 [README_OFFCIAL.md](https://github.com/marshwallen/AIOS/blob/main/README_OFFCIAL.md)
 
 ![image](https://github.com/marshwallen/AIOS/raw/main/docs/assets/aios-figs/architecture.jpg)
 
