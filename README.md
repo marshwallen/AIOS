@@ -42,9 +42,10 @@ ollama list
 - RAM: DDR4 16Gx2 3200Mhz
 ```sh
 # 多实例调用 AIOS 服务
-python client/tasktest.py
+python client/tasktest.py --llm_name erwan2/DeepSeek-Janus-Pro-7B --llm_backend ollama
 
 # 📋 Task result: {'agent_name': 'example/tech_support_agent', 'result': "Than ... Have you tried either of these solutions?", 'rounds': 3}
 # ✅ Task completed
 # Concurrent run time: 37.9095573425293s
 ```
+- AIOS 支持的 Backend 列表写在 [README_OFFCIAL.md](https://github.com/marshwallen/AIOS/blob/main/README_OFFCIAL.md) 的 Supported LLM Cores 项中
