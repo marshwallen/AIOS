@@ -19,7 +19,7 @@ bash runtime/launch_kernel.sh
 ```
 
 2. **LLM Backend 准备**
-- 本 repo 的 LLM 后端使用的是 Ollama，其安装和配置方法在此不作赘述
+- 本 repo 的 LLM 后端使用的是 Ollama，其安装和配置方法在此不作赘述，可以参考：https://github.com/marshwallen/llm-deploy-playground
 - 安装完成后，终端输出应当如下所示
 ```sh
 # 1 检查 Ollama 服务是否起来
