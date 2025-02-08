@@ -6,6 +6,17 @@
 ## Instruction
 1. **AIOS 安装**
 - 请参考: https://docs.aios.foundation/aios-docs/getting-started/installation
+```sh
+# 依赖安装完成后，敲入以下命令启动 AIOS 服务
+bash runtime/launch_kernel.sh
+
+# [DEBUG] Using Agent Hub URL: https://app.aios.foundation
+# [DEBUG] Using Tool Hub URL: https://app.aios.foundation
+# INFO:     Started server process [54037]
+# INFO:     Waiting for application startup.
+# INFO:     Application startup complete.
+# INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+```
 
 2. **LLM Backend 准备**
 - 本 repo 的 LLM 后端使用的是 Ollama，其安装和配置方法在此不作赘述
@@ -25,7 +36,7 @@ ollama list
 
 3. **通过 Cerebrum 调用 AIOS 服务**
 - AIOS SDK 文档: https://docs.aios.foundation/aios-docs/aios-sdk/overview
-- 这里使用 ```erwan2/DeepSeek-Janus-Pro-7B``` 作为演示
+- 这里使用 ```erwan2/DeepSeek-Janus-Pro-7B``` 作为演示，向 AIOS 服务后端发送多个 Agent 请求
 - CPU: 12th Gen Intel(R) Core(TM) i5-12490F
 - GPU: NVIDIA GeForce RTX 3060 Ti 8G
 - RAM: DDR4 16Gx2 3200Mhz
