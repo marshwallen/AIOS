@@ -16,3 +16,4 @@ class SchedulerParams(BaseModel):
     get_memory_syscall: MemoryRequestQueueGetMessage | None
     get_storage_syscall: StorageRequestQueueGetMessage | None
     get_tool_syscall: ToolRequestQueueGetMessage | None
+    scheduler_type: str

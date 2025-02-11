@@ -14,7 +14,7 @@ from aios.hooks.modules.memory import useMemoryManager
 from aios.hooks.modules.storage import useStorageManager
 from aios.hooks.modules.tool import useToolManager
 from aios.hooks.modules.agent import useFactory
-from aios.hooks.modules.scheduler import fifo_scheduler_nonblock as fifo_scheduler
+from aios.hooks.modules.scheduler import scheduler_nonblock as build_scheduler
 from aios.hooks.syscall import useSysCall
 from aios.config.config_manager import config
 
@@ -46,6 +46,8 @@ active_components = {
     "memory": None,
     "tool": None
 }
+
+scheduler_type = "NPPS" # Support FIFO, and NPPS, set None for using FIFO(Default)
 
 send_request, SysCallWrapper = useSysCall()
 
@@ -310,7 +312,7 @@ async def setup_agent_factory(config: SchedulerConfig):
 
 @app.post("/core/scheduler/setup")
 async def setup_scheduler(config: SchedulerConfig):
-    """Set up the FIFO scheduler with all components."""
+    """Set up the scheduler with all components."""
     required_components = ["llm", "memory", "storage", "tool"]
     missing_components = [
         comp for comp in required_components if not active_components[comp]
@@ -324,7 +326,7 @@ async def setup_scheduler(config: SchedulerConfig):
 
     try:
         # Set up the scheduler with all components
-        scheduler = fifo_scheduler(
+        scheduler = build_scheduler(
             llm=active_components["llm"],   
             memory_manager=active_components["memory"],
             storage_manager=active_components["storage"],
@@ -334,6 +336,7 @@ async def setup_scheduler(config: SchedulerConfig):
             get_memory_syscall=None,
             get_storage_syscall=None,
             get_tool_syscall=None,
+            scheduler_type=scheduler_type
         )
 
         active_components["scheduler"] = scheduler

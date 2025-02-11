@@ -49,3 +49,27 @@ python client/tasktest.py --llm_name erwan2/DeepSeek-Janus-Pro-7B --llm_backend 
 # Concurrent run time: 37.9095573425293s
 ```
 - AIOS 支持的 Backend 列表写在 [README_OFFCIAL.md](https://github.com/marshwallen/AIOS/blob/main/README_OFFCIAL.md) 的 Supported LLM Cores 项中
+
+## 调度算法
+AIOS 支持多个 Agent 的同时请求，因此需要调度算法合理规划每一个 task
+1. **先来先服务 (First-In, First-Out, FIFO)**
+- 一种简单的调度策略，任务按照它们到达的顺序进行处理。每个任务在前一个任务完成后才开始执行。这种策略适用于任务之间没有优先级差异的场景
+- 该调度算法为本 AIOS 的默认调度算法，具体使用线程和队列实现了一个 FIFO 任务队列，类似于轮询调度程序。但是，超时时间是 1 秒而不是 0.05 秒
+- 具体实现见：```scheduler/fifo_scheduler.py```
+```sh
+# 要启用 FIFO 调度，请在 runtime/kernel.py 中修改如下项
+scheduler_type = "FIFO"
+```
+
+2. **非抢占式优先级调度 (Non-preemptive Priority Scheduling)**
+- 任务按照其优先级进行处理，但一旦一个任务开始执行，它将不会被中断，直到完成或自愿让出处理器。这种策略适用于需要确保高优先级任务最终得到执行的场景，同时保持系统的稳定性和可预测性
+- 本 forked repo 实现了该调度算法，主要方法有：
+    - **任务队列**：使用优先级队列实现，每个任务都有一个优先级，优先级高的任务会优先被调度
+    - **优先级队列管理**：任务根据优先级插入和重新排列
+    - **等待时间监控**：长时间等待的任务优先级会被提升，以防止饥饿现象
+    - **新任务动态插入**：从系统调用函数中动态获取新任务并插入到队列中
+- 具体实现见：```scheduler/npp_scheduler.py```
+```sh
+# 要启用非抢占式优先级调度，请在 runtime/kernel.py 中修改如下项
+scheduler_type = "NPPS"
+```
