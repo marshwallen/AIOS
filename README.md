@@ -55,7 +55,7 @@ AIOS 支持多个 Agent 的同时请求，因此需要调度算法合理规划�
 1. **先来先服务 (First-In, First-Out, FIFO)**
 - 一种简单的调度策略，任务按照它们到达的顺序进行处理。每个任务在前一个任务完成后才开始执行。这种策略适用于任务之间没有优先级差异的场景
 - 该调度算法为本 AIOS 的默认调度算法，具体使用线程和队列实现了一个 FIFO 任务队列，类似于轮询调度程序。但是，超时时间是 1 秒而不是 0.05 秒
-- 具体实现见：```scheduler/fifo_scheduler.py```
+- 具体实现见：```aios/scheduler/fifo_scheduler.py```
 ```sh
 # 要启用 FIFO 调度，请在 runtime/kernel.py 中修改如下项
 scheduler_type = "FIFO"
@@ -68,7 +68,7 @@ scheduler_type = "FIFO"
     - **优先级队列管理**：任务根据优先级插入和重新排列
     - **等待时间监控**：长时间等待的任务优先级会被提升，以防止饥饿现象
     - **新任务动态插入**：从系统调用函数中动态获取新任务并插入到队列中
-- 具体实现见：```scheduler/npp_scheduler.py```
+- 具体实现见：```aios/scheduler/npp_scheduler.py```
 ```sh
 # 要启用非抢占式优先级调度，请在 runtime/kernel.py 中修改如下项
 scheduler_type = "NPPS"
