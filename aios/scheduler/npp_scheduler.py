@@ -17,6 +17,7 @@ from collections import deque
 
 import traceback
 import time
+import numpy as np
 
 class NPPScheduler(Scheduler):
     def __init__(
@@ -46,7 +47,6 @@ class NPPScheduler(Scheduler):
 
         # 优先级设置
         self.max_priority_level = 5 # 最大优先级的级数
-        self.max_wait_time=10 # 任务经过多少等待时间后提升优先级
 
         # 优先级队列
         self.llm_queues = deque()
@@ -87,9 +87,12 @@ class NPPScheduler(Scheduler):
             except Empty:
                 break
 
-        # 检查任务队列，提升等待时间过长的任务的优先级
+        # 计算任务队列中每个任务的等待时间，使用其90百分位作为阈值，当任务等待时间超过阈值时，提升其优先级
+        wait_times = [curr_time - task.get_created_time() for task in p_queue]
+        threshold = np.percentile(wait_times, 90)
+
         for task in list(p_queue):  # 将 deque 转换为列表以避免在迭代时修改
-            if curr_time - task.get_created_time() > self.max_wait_time:
+            if curr_time - task.get_created_time() > threshold:
                 new_priority = min(0, task.get_priority() - 1)
                 task.set_priority(new_priority)
                 p_queue.remove(task)  # 从原队列中移除任务
