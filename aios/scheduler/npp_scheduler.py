@@ -93,7 +93,7 @@ class NPPScheduler(Scheduler):
 
         for task in list(p_queue):  # 将 deque 转换为列表以避免在迭代时修改
             if curr_time - task.get_created_time() > threshold:
-                new_priority = min(0, task.get_priority() - 1)
+                new_priority = max(0, task.get_priority() - 1)
                 task.set_priority(new_priority)
                 p_queue.remove(task)  # 从原队列中移除任务
                 self.insert_task(p_queue, task)  # 重新插入到适当位置
