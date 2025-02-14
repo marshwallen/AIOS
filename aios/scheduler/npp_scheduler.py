@@ -13,12 +13,20 @@ from aios.tool.manager import ToolManager
 from .base import Scheduler
 
 from queue import Empty
-from collections import deque
 
 import traceback
 import time
-import numpy as np
+import heapq
 
+class Process:
+    # Syscall 的封装
+    def __init__(self, syscall, priority=0):
+        self.syscall = syscall
+        self.priority = priority
+
+    def __lt__(self, other):
+        return self.priority < other.priority
+    
 class NPPScheduler(Scheduler):
     def __init__(
         self,
@@ -49,54 +57,26 @@ class NPPScheduler(Scheduler):
         self.max_priority_level = 5 # 最大优先级的级数
 
         # 优先级队列
-        self.llm_queues = deque()
-        self.mem_queues = deque()
-        self.storage_queues = deque()
-        self.tool_queues = deque()
+        self.llm_queues = []
+        self.mem_queues = []
+        self.storage_queues = []
+        self.tool_queues = []
 
-    def insert_task(self, p_queue: deque, task):
-        """
-        将任务插入到优先级队列中的适当位置
-        :param p_queue: 优先级队列
-        :param task: 要插入的任务
-        """
-        inserted = False
-        for i in range(len(p_queue)):
-            if task.get_priority() < p_queue[i].get_priority():
-                p_queue.insert(i, task)
-                inserted = True
-                break
-        if not inserted:
-            p_queue.append(task)
-
-    def update_priority_queue(self, p_queue: deque, syscall_func):
+    def update_priority_queue(self, p_queue, syscall_func):
         """
         更新优先级队列，并重新按优先级排列
         :param p_queue: 优先级队列
         :param syscall_func: 获取新任务的函数
         :param max_wait_time: 任务提升优先级之前的最大等待时间
         """
-        curr_time = time.time()
-
         # 抓取新的任务并直接插入到优先级队列中的适当位置
         while True:
             try:
                 task = syscall_func()
                 task.set_priority(self.max_priority_level)
-                self.insert_task(p_queue, task)
+                heapq.heappush(p_queue, Process(task, task.get_priority()))
             except Empty:
                 break
-
-        # 计算任务队列中每个任务的等待时间，使用其90百分位作为阈值，当任务等待时间超过阈值时，提升其优先级
-        wait_times = [curr_time - task.get_created_time() for task in p_queue]
-        threshold = np.percentile(wait_times, 90)
-
-        for task in list(p_queue):  # 将 deque 转换为列表以避免在迭代时修改
-            if curr_time - task.get_created_time() > threshold:
-                new_priority = max(0, task.get_priority() - 1)
-                task.set_priority(new_priority)
-                p_queue.remove(task)  # 从原队列中移除任务
-                self.insert_task(p_queue, task)  # 重新插入到适当位置
 
     def run_llm_syscall(self):
         # self.activate: start/stop the scheduler
@@ -104,7 +84,7 @@ class NPPScheduler(Scheduler):
             try:
                 # 更新任务队列
                 self.update_priority_queue(self.llm_queues, self.get_llm_syscall)
-                llm_syscall = self.llm_queues.popleft()
+                llm_syscall = heapq.heappop(self.llm_queues).syscall
 
                 llm_syscall.set_status("executing")
                 self.logger.log(
@@ -130,9 +110,8 @@ class NPPScheduler(Scheduler):
         while self.active:
             try:
                 # wait at a fixed time interval, if there is nothing received in the time interval, it will raise Empty
-                # 新来的任务，按最高优先级加入队列
                 self.update_priority_queue(self.mem_queues, self.get_memory_syscall)
-                memory_syscall = self.mem_queues.popleft()
+                memory_syscall = heapq.heappop(self.mem_queues).syscall
 
                 memory_syscall.set_status("executing")
                 self.logger.log(
@@ -158,7 +137,7 @@ class NPPScheduler(Scheduler):
         while self.active:
             try:
                 self.update_priority_queue(self.storage_queues, self.get_storage_syscall)
-                storage_syscall = self.storage_queues.popleft()
+                storage_syscall = heapq.heappop(self.storage_queues).syscall
 
                 storage_syscall.set_status("executing")
                 self.logger.log(
@@ -189,7 +168,7 @@ class NPPScheduler(Scheduler):
         while self.active:
             try:
                 self.update_priority_queue(self.tool_queues, self.get_tool_syscall)
-                tool_syscall = self.tool_queues.popleft()
+                tool_syscall = heapq.heappop(self.tool_queues).syscall
 
                 tool_syscall.set_status("executing")
 
